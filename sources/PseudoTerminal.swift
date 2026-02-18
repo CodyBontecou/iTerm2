@@ -248,8 +248,7 @@ extension PseudoTerminal: ColorsMenuItemViewDelegate {
     private func applyTabColor(_ color: NSColor) {
         guard let tab = targetTab() else { return }
         for session in tab.sessions() {
-            guard let ptySession = session as? PTYSession else { continue }
-            ptySession.tabColor = color
+            session.tabColor = color
         }
         updateTabColors()
     }

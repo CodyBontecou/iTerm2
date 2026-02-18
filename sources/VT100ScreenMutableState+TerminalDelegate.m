@@ -1810,7 +1810,7 @@ typedef struct {
             // 16-255 cause an early return.
             dispatch_async(queue, ^{
                 DLog(@"finishing");
-                [weakSelf setColorsFromDictionary:mutations];
+                [weakSelf setColorsFromDictionary:mutations harmonize:weakSelf.colorMap.harmonize];
                 [unpauser unpause];
             });
         } else {

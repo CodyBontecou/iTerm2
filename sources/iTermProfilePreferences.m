@@ -294,6 +294,10 @@ typedef struct {
             KEY_BRIGHTEN_BOLD_TEXT COLORS_LIGHT_MODE_SUFFIX,
             KEY_BRIGHTEN_BOLD_TEXT COLORS_DARK_MODE_SUFFIX,
 
+            KEY_HARMONIZE_256_COLORS,
+            KEY_HARMONIZE_256_COLORS COLORS_LIGHT_MODE_SUFFIX,
+            KEY_HARMONIZE_256_COLORS COLORS_DARK_MODE_SUFFIX,
+
             KEY_BLINK_ALLOWED, KEY_USE_ITALIC_FONT, KEY_AMBIGUOUS_DOUBLE_WIDTH,
             KEY_USE_NONASCII_FONT, KEY_INITIAL_USE_TRANSPARENCY, KEY_BLUR,
             KEY_DISABLE_WINDOW_RESIZING, KEY_DISABLE_UNFOCUSED_WINDOW_RESIZING,
@@ -599,6 +603,8 @@ typedef struct {
             KEY_USE_BOLD_COLOR COLORS_DARK_MODE_SUFFIX:             @"Whether to use a separate color for bold text in dark mode",
             KEY_BRIGHTEN_BOLD_TEXT COLORS_LIGHT_MODE_SUFFIX:        @"Whether to brighten bold text in light mode",
             KEY_BRIGHTEN_BOLD_TEXT COLORS_DARK_MODE_SUFFIX:         @"Whether to brighten bold text in dark mode",
+            KEY_HARMONIZE_256_COLORS COLORS_LIGHT_MODE_SUFFIX:      @"Whether 8-bit colors should be picked to match well with ANSI colors in light mode",
+            KEY_HARMONIZE_256_COLORS COLORS_DARK_MODE_SUFFIX:       @"Whether 8-bit colors should be picked to match well with ANSI colors in dark mode",
 
             KEY_NAME:                                               @"Profile name",
             KEY_SHORTCUT:                                           @"Keyboard shortcut character for ⌃⌘ profile access",
@@ -667,6 +673,7 @@ typedef struct {
             KEY_NON_ASCII_LIGATURES:                                @"Whether to render ligatures in non-ASCII text",
             KEY_USE_BOLD_COLOR:                                     @"Whether to use a separate color for bold text",
             KEY_BRIGHTEN_BOLD_TEXT:                                 @"Whether to brighten bold text",
+            KEY_HARMONIZE_256_COLORS:                               @"Whether 8-bit colors should be picked to match well with ANSI colors",
             KEY_BLINK_ALLOWED:                                      @"Whether blinking text is allowed",
             KEY_USE_ITALIC_FONT:                                    @"Whether to use italic font for italic text",
             KEY_AMBIGUOUS_DOUBLE_WIDTH:                             @"Whether to treat ambiguous-width characters as double-width",
@@ -993,7 +1000,11 @@ typedef struct {
                   KEY_BRIGHTEN_BOLD_TEXT: @YES,
                   KEY_BRIGHTEN_BOLD_TEXT COLORS_LIGHT_MODE_SUFFIX: @YES,
                   KEY_BRIGHTEN_BOLD_TEXT COLORS_DARK_MODE_SUFFIX: @YES,
-                  
+
+                  KEY_HARMONIZE_256_COLORS: @YES,
+                  KEY_HARMONIZE_256_COLORS COLORS_LIGHT_MODE_SUFFIX: @YES,
+                  KEY_HARMONIZE_256_COLORS COLORS_DARK_MODE_SUFFIX: @YES,
+
                   KEY_BLINK_ALLOWED: @NO,
                   KEY_USE_ITALIC_FONT: @YES,
                   KEY_AMBIGUOUS_DOUBLE_WIDTH: @NO,

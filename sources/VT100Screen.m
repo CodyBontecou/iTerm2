@@ -169,9 +169,9 @@ const NSInteger VT100ScreenBigFileDownloadThreshold = 1024 * 1024 * 1024;
     return _state.commandStartCoord;
 }
 
-- (void)setColorsFromDictionary:(NSDictionary<NSNumber *, id> *)dict {
+- (void)setColorsFromDictionary:(NSDictionary<NSNumber *, id> *)dict harmonize:(BOOL)harmonize {
     [self performBlockWithJoinedThreads:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-        [mutableState setColorsFromDictionary:dict];
+        [mutableState setColorsFromDictionary:dict harmonize:harmonize];
     }];
 }
 

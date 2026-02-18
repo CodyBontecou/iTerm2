@@ -4916,7 +4916,8 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     const BOOL didUseSelectedTextColor = [iTermProfilePreferences boolForKey:iTermAmendedColorKey(KEY_USE_SELECTED_TEXT_COLOR, self.profile, dark) inProfile:self.profile];
     const BOOL willUseSelectedTextColor = [iTermProfilePreferences boolForKey:iTermAmendedColorKey(KEY_USE_SELECTED_TEXT_COLOR, aDict, dark) inProfile:aDict];
 
-    [_screen setColorsFromDictionary:colorTable];
+    [_screen setColorsFromDictionary:colorTable harmonize:[iTermProfilePreferences boolForKey:iTermAmendedColorKey(KEY_HARMONIZE_256_COLORS, aDict, dark)
+                                                                                    inProfile:aDict]];
 
     if (didUseSelectedTextColor != willUseSelectedTextColor) {
         [_textview updatePortholeColorsWithUseSelectedTextColor:willUseSelectedTextColor
