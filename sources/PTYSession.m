@@ -5199,6 +5199,7 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     if (!_preferencesLoaded) {
         self.locked = [iTermProfilePreferences boolForKey:KEY_DEFAULT_PANE_LOCKED inProfile:aDict];
         _preferencesLoaded = YES;
+        _buffering = [iTermProfilePreferences boolForKey:KEY_BUFFER_BY_DEFAULT inProfile:aDict];
     }
     self.endAction = [iTermProfilePreferences unsignedIntegerForKey:KEY_SESSION_END_ACTION inProfile:aDict];
     [self setTreatAmbiguousWidthAsDoubleWidth:[iTermProfilePreferences boolForKey:KEY_AMBIGUOUS_DOUBLE_WIDTH
@@ -12401,6 +12402,10 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     return self.channelParentGuid != nil;
 }
 
+- (BOOL)textViewIsBufferingInput {
+    return _buffering;
+}
+
 - (BOOL)textViewInPinnedHotkeyWindow {
     if (![iTermAdvancedSettingsModel showPinnedIndicator]) {
         return NO;
@@ -12658,8 +12663,11 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 
 - (void)textViewNeedsDisplayInRect:(NSRect)rect {
     DLog(@"text view needs display");
-    NSRect visibleRect = NSIntersectionRect(rect, _textview.enclosingScrollView.documentVisibleRect);
-    [_view setMetalViewNeedsDisplayInTextViewRect:visibleRect];
+    [self requestRedraw];
+}
+
+- (void)requestRedraw {
+    [_view requestRedraw];
     [self updateWrapperAlphaForMetalEnabled:_view.useMetal];
     if (self.isBrowserSession) {
         [_textview configureIndicatorsHelperWithRightMargin:0];
@@ -18757,6 +18765,10 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [self screenSendReportData:[s dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
+- (void)textViewToggleBufferInput {
+    [self toggleBufferInput];
+}
+
 - (void)removeSelectedCommandRange {
     if (!self.selectedCommandMark) {
         return;
@@ -21718,8 +21730,13 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
     if (_buffering == shouldBuffer) {
         return;
     }
-    _buffering = shouldBuffer;
-    if (!_screen.sendingIsBlocked && !shouldBuffer) {
+    [self toggleBufferInput];
+}
+
+- (void)toggleBufferInput {
+    _buffering = !_buffering;
+    [self requestRedraw];
+    if (!_screen.sendingIsBlocked && !_buffering) {
         [self sendDataQueue];
     }
 }

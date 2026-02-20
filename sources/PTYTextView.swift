@@ -860,6 +860,9 @@ extension PTYTextView {
             }
         } else if item.action == #selector(saveArchive(_:)) {
             return true
+        } else if item.action == #selector(toggleBufferInput(_:)) {
+            item.state = (delegate?.textViewIsBufferingInput() ?? false) ? .on : .off
+            return true
         }
         return false
     }
@@ -900,5 +903,14 @@ extension PTYTextView {
                 }
             }
         }
+    }
+}
+
+@objc
+extension PTYTextView {
+    @IBAction
+    @objc(toggleBufferInput:)
+    func toggleBufferInput(_ sender: Any) {
+        delegate?.textViewToggleBufferInput()
     }
 }

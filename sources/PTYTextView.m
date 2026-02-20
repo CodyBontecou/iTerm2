@@ -1981,6 +1981,9 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     [_indicatorsHelper setIndicator:kiTermIndicatorChannel
                             visible:[_delegate textViewSessionHasChannelParent]
                      darkBackground:isDark];
+    [_indicatorsHelper setIndicator:kiTermIndicatorBufferingInput
+                            visible:[_delegate textViewIsBufferingInput]
+                     darkBackground:isDark];
     const BOOL secureByUser = [[iTermSecureKeyboardEntryController sharedInstance] enabledByUserDefault];
     const BOOL secure = [[iTermSecureKeyboardEntryController sharedInstance] isEnabled];
     const BOOL allowSecureKeyboardEntryIndicator = [iTermAdvancedSettingsModel showSecureKeyboardEntryIndicator];

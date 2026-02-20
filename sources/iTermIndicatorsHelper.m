@@ -35,6 +35,7 @@ NSString *const kiTermIndicatorPinned = @"kiTermIndicatorPinned";
 NSString *const kiTermIndicatorAIChatLinked = @"kiTermIndicatorAIChatLinked";
 NSString *const kiTermIndicatorAIChatStreaming = @"kiTermIndicatorAIChatStreaming";
 NSString *const kiTermIndicatorChannel = @"kiTermIndicatorChannel";
+NSString *const kiTermIndicatorBufferingInput = @"kiTermIndicatorBufferingInput";
 
 static const NSTimeInterval kFullScreenFlashDuration = 0.3;
 static const NSTimeInterval kFlashDuration = 0.3;
@@ -108,7 +109,8 @@ CGFloat kiTermIndicatorStandardHeight = 20;
             kiTermIndicatorPinned: SFSymbolGetString(SFSymbolPin),
             kiTermIndicatorAIChatLinked: SFSymbolGetString(SFSymbolBrain),
             kiTermIndicatorAIChatStreaming: SFSymbolGetString(SFSymbolDotRadiowavesRight),
-            kiTermIndicatorChannel: SFSymbolGetString(SFSymbolRectangleStack)
+            kiTermIndicatorChannel: SFSymbolGetString(SFSymbolRectangleStack),
+            kiTermIndicatorBufferingInput: SFSymbolGetString(SFSymbolPauseCircle)
         };
     });
     return symbolMap;
@@ -309,7 +311,8 @@ CGFloat kiTermIndicatorStandardHeight = 20;
               kiTermIndicatorPinned,
               kiTermIndicatorAIChatLinked,
               kiTermIndicatorAIChatStreaming,
-              kiTermIndicatorChannel];
+              kiTermIndicatorChannel,
+              kiTermIndicatorBufferingInput];
 }
 
 - (void)enumerateTopRightIndicatorsInFrame:(NSRect)frame andDraw:(BOOL)shouldDraw block:(void (^)(NSString *, NSImage *, NSRect, BOOL))block {
@@ -361,7 +364,8 @@ CGFloat kiTermIndicatorStandardHeight = 20;
         kiTermIndicatorAIChatLinked: [NSString stringWithFormat:@"AI Chats can view or control this session.\n * [Unlink from AI Chat](iterm2:unlink-session-chat?s=%@&t=%@)\n * [Reveal AI Chat](iterm2:reveal-chat-for-session?s=%@&t=%@)", sessionID, [[NSWorkspace sharedWorkspace] it_newToken], sessionID, [[NSWorkspace sharedWorkspace] it_newToken]],
         kiTermIndicatorAIChatStreaming: [NSString stringWithFormat:@"Commands run in this session are automatically sent to an AI chat, along with their output. [Stop sending](iterm2:disable-streaming-session-chat?s=%@&t=%@)",
                                          sessionID, [[NSWorkspace sharedWorkspace] it_newToken]],
-        kiTermIndicatorChannel: [NSString stringWithFormat:@"This command is running within another session.\n * [Return to Enclosing Session](iterm2:pop-channel?s=%@&t=%@)", sessionID, [[NSWorkspace sharedWorkspace] it_newToken]]
+        kiTermIndicatorChannel: [NSString stringWithFormat:@"This command is running within another session.\n * [Return to Enclosing Session](iterm2:pop-channel?s=%@&t=%@)", sessionID, [[NSWorkspace sharedWorkspace] it_newToken]],
+        kiTermIndicatorBufferingInput: @"Keyboard input is being buffered and will be sent when a trigger stops buffering."
     };
     return messages[name];
 }

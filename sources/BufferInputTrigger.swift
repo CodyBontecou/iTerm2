@@ -13,7 +13,7 @@ class BufferInputTrigger: Trigger {
         case stop = 1
     }
 
-    private var shouldBuffer: Bool {
+    @objc var shouldBuffer: Bool {
         switch Tag(rawValue: (self.param as? NSNumber)?.intValue ?? 0) {
         case .none, .start:
             return true
