@@ -306,6 +306,9 @@ paranoid-ColorPicker: force
 paranoid-SearchableComboListView: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) SearchableComboListView
 
+paranoid-pwmadapters: force
+	/usr/bin/sandbox-exec -f deps.sb $(MAKE) pwmadapters
+
 # You probably want make paranoid-deps to avoid depending on Homebrew stuff.
 deps: force fatlibsixel CoreParse NMSSH bindeps libgit2 sparkle librailroad_dsl sfsymbolenum pwmadapters
 
