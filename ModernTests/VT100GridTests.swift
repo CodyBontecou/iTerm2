@@ -2196,6 +2196,77 @@ class VT100GridTests: XCTestCase {
         XCTAssertEqual(grid4.cursorY, 1)
     }
 
+    func testRestoreScreenFromLineBufferCursorAfterPartialDropWithDWC() {
+        // This test verifies correct cursor restoration after a partial line drop
+        // involving double-width characters. It exercises the fix for the rawLine: bug
+        // through the production code path:
+        //   restoreScreenFromLineBuffer: → getCursorInLastLineWithWidth: → rawLine:
+        //
+        // The bug: rawLine: checked "linenum == 0" instead of "linenum == _firstEntry",
+        // causing it to return cumulative_line_lengths[_firstEntry - 1] instead of
+        // bufferStartOffset when there's been a partial drop with _firstEntry > 0.
+        //
+        // Setup:
+        // - Line 0: "ABCDEFGH" (8 chars, no DWC)
+        // - Line 1: "IJKW-NOP" (8 chars, DWC W- at positions 3-4)
+        // - Width 4
+        // - Cursor at position 3 in line 1
+        //
+        // At width 4, line 1 wraps as: [IJK>][W-NO][P] (DWC causes wrap, > is DWC_SKIP)
+        //
+        // After dropping 3 wrapped lines:
+        // - _firstEntry = 1, bufferStartOffset = 11
+        // - Remaining content: "W-NOP" (5 chars), wraps as [W-NO][P]
+        //
+        // Bug behavior: rawLine:1 returned position 8 (cumulative_line_lengths[0]),
+        // reading "IJKW-" instead of "W-NOP". The DWC_RIGHT at position 4 in the wrong
+        // data caused OffsetOfWrappedLine to return 3 instead of 4, shifting min_x and
+        // causing the cursor to be found in the FIRST iteration at wrong position (0, 1).
+        //
+        // Fixed behavior: rawLine:1 returns position 11 (bufferStartOffset), reading
+        // correct "W-NOP" data. Cursor is found in the SECOND iteration (after popping
+        // [P]) at correct position (3, 0).
+
+        let width: Int32 = 4
+
+        let lineBuffer = LineBuffer(blockSize: 1000)
+        lineBuffer.mayHaveDoubleWidthCharacter = true
+
+        // Line 0: "ABCDEFGH"
+        let line0 = screenCharLine(forString: "ABCDEFGH")
+        lineBuffer.appendLine(line0, length: 8, partial: false, width: width,
+                              metadata: iTermImmutableMetadataDefault(), continuation: screen_char_t())
+
+        // Set cursor at position 3 BEFORE appending line 1
+        lineBuffer.setCursor(3)
+
+        // Line 1: "IJKW-NOP" where W- is a DWC
+        let line1 = screenCharLine(forString: "IJKW-NOP")
+        lineBuffer.appendLine(line1, length: 8, partial: false, width: width,
+                              metadata: iTermImmutableMetadataDefault(), continuation: screen_char_t())
+
+        // Verify initial state
+        XCTAssertEqual(lineBuffer.numLines(withWidth: width), 5)
+
+        // Drop 3 wrapped lines to trigger partial drop
+        lineBuffer.setMaxLines(2)
+        let dropped = lineBuffer.dropExcessLines(withWidth: width)
+        XCTAssertEqual(dropped, 3)
+        XCTAssertEqual(lineBuffer.numLines(withWidth: width), 2)
+
+        // Restore screen - this exercises getCursorInLastLineWithWidth which uses rawLine:
+        let grid = VT100Grid(size: VT100GridSize(width: width, height: 4), delegate: nil)!
+        let foundCursor = grid.restoreScreen(from: lineBuffer,
+                                              withDefaultChar: grid.defaultChar,
+                                              maxLinesToRestore: 10)
+
+        // With the fix, cursor is found at (3, 0)
+        // Before the fix, cursor was incorrectly found at (0, 1) due to wrong data
+        XCTAssertTrue(foundCursor, "Cursor should be found")
+        XCTAssertEqual(grid.cursorX, 3, "Cursor X should be 3")
+        XCTAssertEqual(grid.cursorY, 0, "Cursor Y should be 0")
+    }
+
     func testRectsForRun() {
         let grid = largeGrid()  // 8x8
         let run = VT100GridRun(origin: VT100GridCoord(x: 3, y: 2), length: 20)
