@@ -55,6 +55,7 @@
 #import "iTermKeyBindingAction.h"
 #import "iTermKeystroke.h"
 #import "iTermKeystrokeFormatter.h"
+#import "iTermLayoutCalculator.h"
 #import "iTermLogoGenerator.h"
 #import "iTermMenuBarObserver.h"
 #import "iTermMetalBufferPool.h"
