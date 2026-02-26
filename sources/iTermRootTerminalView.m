@@ -479,6 +479,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
             case TAB_STYLE_MINIMAL:
                 return 2.5;
             case TAB_STYLE_COMPACT:
+                return 6 + 3;
             case TAB_STYLE_DARK:
             case TAB_STYLE_LIGHT:
             case TAB_STYLE_AUTOMATIC:
@@ -488,6 +489,24 @@ NS_CLASS_AVAILABLE_MAC(10_14)
         }
     }
     return 6;
+}
+
+- (CGFloat)widthForStandardButtonsView {
+    if (@available(macOS 26, *)) {
+        const iTermPreferencesTabStyle preferredStyle = [iTermPreferences intForKey:kPreferenceKeyTabStyle];
+        switch (preferredStyle) {
+            case TAB_STYLE_COMPACT:
+                return iTermStandardButtonsViewWidth + 3;
+            case TAB_STYLE_MINIMAL:
+            case TAB_STYLE_DARK:
+            case TAB_STYLE_LIGHT:
+            case TAB_STYLE_AUTOMATIC:
+            case TAB_STYLE_DARK_HIGH_CONTRAST:
+            case TAB_STYLE_LIGHT_HIGH_CONTRAST:
+                break;
+        }
+    }
+    return iTermStandardButtonsViewWidth;
 }
 
 - (CGFloat)strideForWindowButtons {
@@ -537,7 +556,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
         return insets;
     }
 
-    const CGFloat hotboxSideInset = (iTermStoplightHotboxWidth - iTermStandardButtonsViewWidth) / 2.0;
+    const CGFloat hotboxSideInset = (iTermStoplightHotboxWidth - [self widthForStandardButtonsView]) / 2.0;
     const CGFloat hotboxVerticalInset = (iTermStoplightHotboxHeight - iTermStandardButtonsViewHeight) / 2.0;
     return NSEdgeInsetsMake(hotboxVerticalInset, hotboxSideInset, hotboxVerticalInset, hotboxSideInset);
 }
@@ -552,7 +571,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
     }
     NSRect frame = NSMakeRect(insets.left,
                               self.frame.size.height - height + insets.bottom + 1,
-                              iTermStandardButtonsViewWidth,
+                              [self widthForStandardButtonsView],
                               iTermStandardButtonsViewHeight);
     return [self retinaRoundRect:frame];
 }

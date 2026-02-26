@@ -5027,7 +5027,10 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 }
 
 - (NSEdgeInsets)tabBarInsetsForCompactWindow NS_AVAILABLE_MAC(10_14) {
-    const CGFloat stoplightButtonsWidth = 75;
+    CGFloat stoplightButtonsWidth = 75;
+    if (@available(macOS 26, *)) {
+        stoplightButtonsWidth += 3;
+    }
     switch ([iTermPreferences intForKey:kPreferenceKeyTabPosition]) {
         case PSMTab_TopTab: {
             const CGFloat extraSpace = MAX(0, [iTermAdvancedSettingsModel extraSpaceBeforeCompactTopTabBar]);
