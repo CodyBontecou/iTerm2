@@ -20327,6 +20327,16 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                                                    target:self
                                                    action:@selector(fetchTimeOffsetWithCompletion:)];
         [_methods registerFunction:method namespace:@"iterm2"];
+
+        method = [[iTermBuiltInMethod alloc] initWithName:@"load_url"
+                                            defaultValues:@{}
+                                                    types:@{ @"url": [NSString class] }
+                                        optionalArguments:[NSSet set]
+                                                  context:iTermVariablesSuggestionContextSession
+                                   sideEffectsPlaceholder:@"[load_url]"
+                                                   target:self
+                                                   action:@selector(loadURLWithCompletion:url:connectionKey:)];
+        [_methods registerFunction:method namespace:@"iterm2"];
     }
     return _methods;
 }
@@ -20418,6 +20428,84 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                        nil);
         }
     }];
+}
+
+#pragma mark - load_url
+
+- (NSError *)loadURLErrorWithCode:(NSInteger)code message:(NSString *)message {
+    return [NSError errorWithDomain:@"com.iterm2.load-url"
+                               code:code
+                           userInfo:@{ NSLocalizedDescriptionKey: message }];
+}
+
+- (void)loadURLWithCompletion:(void (^)(id, NSError *))completion
+                          url:(NSString *)urlString
+                connectionKey:(id)connectionKey {
+    // 1. Validate browser session
+    if (!self.isBrowserSession) {
+        completion(nil, [self loadURLErrorWithCode:1
+                                           message:@"load_url is only supported in browser sessions"]);
+        return;
+    }
+
+    // 2. Parse and validate URL
+    NSURL *url = [NSURL URLWithString:urlString];
+    if (!url || !url.host.length) {
+        completion(nil, [self loadURLErrorWithCode:2 message:@"Invalid URL"]);
+        return;
+    }
+
+    // 3. Validate connection context
+    if (!connectionKey) {
+        completion(nil, [self loadURLErrorWithCode:3
+                                           message:@"load_url must be called from a Python script"]);
+        return;
+    }
+
+    NSString *domain = url.host;
+    iTermAPIHelper *apiHelper = [iTermAPIHelper sharedInstanceIfEnabled];
+
+    // 4. Check if already approved
+    if ([apiHelper isDomainApprovedForLoadURL:domain connectionKey:connectionKey]) {
+        [self performLoadURL:url completion:completion];
+        return;
+    }
+
+    // 5. Show confirmation dialog
+    iTermScriptHistoryEntry *entry = [apiHelper scriptHistoryEntryForConnectionKey:connectionKey];
+    NSString *scriptName = entry.name ?: @"A script";
+
+    NSString *heading = [NSString stringWithFormat:
+        @"%@ wants to load a URL in this browser session.", scriptName];
+    NSString *title = [NSString stringWithFormat:
+        @"Allow loading URLs from %@?", domain];
+
+    [iTermWarning asyncShowWarningWithTitle:title
+                                    actions:@[ @"Allow", @"Deny" ]
+                              actionMapping:nil
+                                  accessory:nil
+                                 identifier:nil
+                                silenceable:kiTermWarningTypePersistent
+                                    heading:heading
+                                cancelLabel:nil
+                                     window:self.delegate.realParentWindow.window
+                                 completion:^(iTermWarningSelection selection,
+                                              iTermWarning *warning) {
+        if (selection == kiTermWarningSelection0) {
+            // User approved - remember for this connection
+            [apiHelper approveDomainForLoadURL:domain connectionKey:connectionKey];
+            [self performLoadURL:url completion:completion];
+        } else {
+            // User denied
+            completion(nil, [self loadURLErrorWithCode:4
+                                               message:@"User denied permission to load URL"]);
+        }
+    }];
+}
+
+- (void)performLoadURL:(NSURL *)url completion:(void (^)(id, NSError *))completion {
+    [self openURL:url];
+    completion(@YES, nil);
 }
 
 - (void)setStatusBarComponentUnreadCountWithCompletion:(void (^)(id, NSError *))completion
