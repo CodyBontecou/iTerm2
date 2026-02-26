@@ -84,6 +84,7 @@
 #import "iTermActionsModel.h"
 #import "iTermAddTriggerViewController.h"
 #import "iTermAdvancedSettingsModel.h"
+#import "iTermAnnouncementView.h"
 #import "iTermAnnouncementViewController.h"
 #import "iTermApplication.h"
 #import "iTermApplicationDelegate.h"
@@ -6520,8 +6521,31 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     if ([self shouldShowPasswordManagerAutomatically]) {
         iTermApplicationDelegate *itad = [iTermApplication.sharedApplication delegate];
         [itad openPasswordManagerToAccountName:nil inSession:self];
-
     }
+    [self checkForSudoPasswordPromptToOfferTouchID];
+}
+
+- (void)checkForSudoPasswordPromptToOfferTouchID {
+    if (!_passwordInput) {
+        return;
+    }
+    if (![self.jobName isEqualToString:@"sudo"]) {
+        return;
+    }
+    if (_tmuxMode != TMUX_NONE) {
+        return;
+    }
+    if (_conductor != nil) {
+        return;
+    }
+    id<VT100RemoteHostReading> host = [self currentHost];
+    if (host != nil && !host.isLocalhost) {
+        return;
+    }
+    if (![iTermTouchIDHelper isBiometricAuthenticationAvailable]) {
+        return;
+    }
+    [_naggingController offerToEnableTouchIDForSudo];
 }
 
 // Update the tab, session view, and window title.
@@ -6580,6 +6604,12 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     [self.variablesScope setValue:processTitle forVariableNamed:iTermVariableKeySessionProcessTitle];
     [self.variablesScope setValue:processInfo.commandLine forVariableNamed:iTermVariableKeySessionCommandLine];
     [self.variablesScope setValue:@(processInfo.processID) forVariableNamed:iTermVariableKeySessionJobPid];
+
+    if ([name isEqualToString:@"sudo"]) {
+        [self checkForSudoPasswordPromptToOfferTouchID];
+    } else {
+        [_naggingController removeTouchIDForSudoOffer];
+    }
 
     NSNumber *effectiveShellPID = _shell.tmuxClientProcessID ?: @(_shell.pid);
     if (!_exited) {
@@ -20610,6 +20640,14 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)naggingControllerSetProfileProperties:(NSDictionary *)dict {
     [self setSessionSpecificProfileValues:dict];
+}
+
+- (BOOL)naggingControllerAnnouncementWouldObscureCursorForText:(NSString *)text {
+    const CGFloat announcementHeight = [iTermAnnouncementView estimatedHeightForWidth:_view.frame.size.width
+                                                                                 text:text];
+    const CGFloat cellHeight = [_textview lineHeight];
+    const int linesObscuredByAnnouncement = (int)ceil(announcementHeight / cellHeight);
+    return _screen.cursorY <= linesObscuredByAnnouncement;
 }
 
 - (void)naggingControllerPrettyPrintJSON {
