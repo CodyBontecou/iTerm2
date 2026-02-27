@@ -430,6 +430,28 @@ static BOOL hasBecomeActive = NO;
     } else if ([menuItem action] == @selector(toggleFullScreenTabBar:)) {
         [menuItem setState:[iTermPreferences boolForKey:kPreferenceKeyShowFullscreenTabBar] ? NSControlStateValueOn : NSControlStateValueOff];
         return YES;
+    } else if ([menuItem action] == @selector(toggleAppearance:)) {
+        // Update menu item title based on current effective appearance
+        iTermPreferencesTabStyle tabStyle = [iTermPreferences intForKey:kPreferenceKeyTabStyle];
+        BOOL effectivelyDark;
+        switch (tabStyle) {
+            case TAB_STYLE_DARK:
+            case TAB_STYLE_DARK_HIGH_CONTRAST:
+                effectivelyDark = YES;
+                break;
+            case TAB_STYLE_LIGHT:
+            case TAB_STYLE_LIGHT_HIGH_CONTRAST:
+                effectivelyDark = NO;
+                break;
+            case TAB_STYLE_AUTOMATIC:
+            case TAB_STYLE_MINIMAL:
+            case TAB_STYLE_COMPACT:
+            default:
+                effectivelyDark = [NSAppearance it_systemThemeIsDark];
+                break;
+        }
+        menuItem.title = effectivelyDark ? @"Switch to Light Mode" : @"Switch to Dark Mode";
+        return YES;
     } else if ([menuItem action] == @selector(toggleMultiLinePasteWarning:)) {
         if ([iTermWarning warningHandler]) {
             // In a test.
@@ -2422,6 +2444,43 @@ static iTermKeyEventReplayer *gReplayer;
     BOOL value = [iTermPreferences boolForKey:kPreferenceKeyShowFullscreenTabBar];
     [iTermPreferences setBool:!value forKey:kPreferenceKeyShowFullscreenTabBar];
     [[NSNotificationCenter defaultCenter] postNotificationName:kShowFullscreenTabsSettingDidChange
+                                                        object:nil
+                                                      userInfo:nil];
+}
+
+- (IBAction)toggleAppearance:(id)sender {
+    iTermPreferencesTabStyle currentStyle = [iTermPreferences intForKey:kPreferenceKeyTabStyle];
+    iTermPreferencesTabStyle newStyle;
+
+    switch (currentStyle) {
+        case TAB_STYLE_LIGHT:
+            newStyle = TAB_STYLE_DARK;
+            break;
+        case TAB_STYLE_DARK:
+            newStyle = TAB_STYLE_LIGHT;
+            break;
+        case TAB_STYLE_LIGHT_HIGH_CONTRAST:
+            newStyle = TAB_STYLE_DARK_HIGH_CONTRAST;
+            break;
+        case TAB_STYLE_DARK_HIGH_CONTRAST:
+            newStyle = TAB_STYLE_LIGHT_HIGH_CONTRAST;
+            break;
+        case TAB_STYLE_AUTOMATIC:
+        case TAB_STYLE_MINIMAL:
+        case TAB_STYLE_COMPACT:
+        default:
+            // For automatic/minimal/compact modes, toggle based on current system appearance
+            if ([NSAppearance it_systemThemeIsDark]) {
+                newStyle = TAB_STYLE_LIGHT;
+            } else {
+                newStyle = TAB_STYLE_DARK;
+            }
+            break;
+    }
+
+    [iTermPreferences setInt:newStyle forKey:kPreferenceKeyTabStyle];
+    [[iTermApplication sharedApplication] updateAppearance];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kRefreshTerminalNotification
                                                         object:nil
                                                       userInfo:nil];
 }

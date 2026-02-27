@@ -390,7 +390,7 @@ DQ
                                 </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="1439"/>
-                            <menuItem title="Page Setup..." keyEquivalent="P" identifier="Page Setup..." id="685">
+                            <menuItem title="Page Setup..." keyEquivalent="" identifier="Page Setup..." id="685">
                                 <connections>
                                     <action selector="runPageLayout:" target="-1" id="691"/>
                                 </connections>
@@ -912,6 +912,12 @@ DQ
                                     <action selector="toggleFullScreenMode:" target="-1" id="1256"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Switch to Dark Mode" keyEquivalent="t" identifier="Toggle Appearance" id="tgl-app-001">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleAppearance:" target="-1" id="tgl-app-002"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="bWM-We-TVH"/>
                             <menuItem title="Toolbelt" identifier="Toolbelt" id="1295">
                                 <modifierMask key="keyEquivalentModifierMask"/>
@@ -1016,6 +1022,12 @@ Gw
                             <menuItem title="Open Quickly" keyEquivalent="O" identifier="Open Quickly" id="Knm-gZ-dFc">
                                 <connections>
                                     <action selector="openQuickly:" target="201" id="B7o-gt-d3A"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Command Palette" keyEquivalent="p" identifier="Command Palette" id="cmd-palette-001">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="openCommandPalette:" target="201" id="cmd-palette-action-001"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="VKC-UO-5Cj">
